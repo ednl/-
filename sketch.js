@@ -1,55 +1,82 @@
-let count, size, pitch, speed;
-let angle = 180;
 const TORAD = Math.PI / 180;
 
+let size, count, pitch, speed, half;
+let angle = 180;
+
+function getDimension() {
+	return max(100, min(windowWidth, windowHeight - 30));
+}
+
+function getSliderWidth(canvaswidth) {
+	return (canvaswidth - 20) / 4;
+}
+
+function windowResized() {
+	const dim = getDimension();
+	resizeCanvas(dim, dim);
+	half = dim / 2;
+
+	const sw = getSliderWidth(dim);
+	size.style('width', sw + 'px');
+	count.style('width', sw + 'px');
+	pitch.style('width', sw + 'px');
+	speed.style('width', sw + 'px');
+}
+
 function setup() {
-  createCanvas(815, 815);
-  colorMode(HSB);
-  strokeWeight(1);
-  noStroke();
-  fill(0);
-  textSize(16);
-  textAlign(RIGHT, BOTTOM);
-  
-  size  = createSlider(1, 50, 20);
-  count = createSlider(100, 1000, 500);
-  pitch = createSlider(0.01, 2, 1, 0.01);
-  speed = createSlider(-0.1, 0.1, 0.02, 0.001);
-  size.style('width', '200px');
-  count.style('width', '200px');
-  pitch.style('width', '200px');
-  speed.style('width', '200px');
+	createCanvas(100, 100);
+	size  = createSlider(1, 50, 20);
+	count = createSlider(100, 1000, 500);
+	pitch = createSlider(0.01, 2, 1, 0.01);
+	speed = createSlider(-0.1, 0.1, 0.02, 0.001);
+	windowResized();
+
+	colorMode(HSB);
+	strokeWeight(1);
+	noStroke();
+	fill(0);
+	textSize(16);
+	textAlign(RIGHT, BOTTOM);
 }
 
 function draw() {
-  const dr = pitch.value();
-  const s = size.value() * 10;
-  const w = width / 2;
-  let a = 0, r = 0;
-  
-  push();
-  translate (w, height / 2);
-  scale(1, -1);
-  stroke(0, 0, 0, 0.2);
-  background(0, 0, 100, 1);
-  
-  for (let n = 0; n < count.value(); ++n) {
-    fill(map(r, 0, w, 0, 300), 100, 100, 0.8);
-    const x = r * cos(a);
-    const y = r * sin(a);
-    const d = map(r, 0, w, 10, s);
-    circle(x, y, d);
-    a += angle * TORAD;
-    r += dr;
-  }
-  pop();
-  
-  text(angle.toFixed(2), width - 6, height - 4);
-  
-  angle += speed.value();
-  if (angle >= 360) {
-    angle = 0;
-  } else if (angle <= 0) {
-    angle = 360;
-  }
+	// Complete every draw loop with consistent settings
+	const maxsize = size.value() * 10;
+	const num = count.value();
+	const dr = pitch.value();
+	const omega = speed.value();
+
+	push();
+	translate(half, half);   // origin in the middle
+	scale(1, -1);              // make sin() go the right way
+	stroke(0, 0, 0, 0.2);      // soft outline
+	background(0, 0, 100, 1);  // white background
+	let a = 0, r = 0;          // angle,radius per seed
+	for (let n = 0; n < num; ++n) {
+		// Hue from red to not-quite-back-to-red
+		const rainbow = map(r, 0, half, 0, 250);
+		fill(rainbow, 100, 100, 0.8);
+
+		// Draw the seed
+		const x = r * cos(a);
+		const y = r * sin(a);
+		const diam = map(r, 0, half, 10, maxsize);
+		circle(x, y, diam);
+
+		// Go to the next seed
+		a += angle * TORAD;
+		r += dr;
+	}
+	pop();
+
+	// Print the next-seed-angle in degrees with 2 decimal places
+	text(angle.toFixed(2), width - 6, height - 4);
+
+	// Slightly different angle for the next draw loop
+	angle += omega;
+	if (angle >= 360) {
+		angle -= 360;
+	} else if (angle < 0) {
+		angle += 360;
+	}
 }
