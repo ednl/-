@@ -25,7 +25,10 @@ function windowResized() {
 }
 
 function mousePressed() {
-	isMoving = !isMoving;
+	if (mouseX >= 10 && mouseY >= 10 && mouseX < width - 10 && mouseY < height - 20) {
+		isMoving = !isMoving;
+		return false;
+	}
 }
 
 function setup() {
