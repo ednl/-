@@ -2,6 +2,7 @@ const TORAD = Math.PI / 180;
 
 let size, count, pitch, speed, half;
 let angle = 180;
+let isMoving = true;
 
 function getDimension() {
 	return max(100, min(windowWidth, windowHeight - 30));
@@ -21,6 +22,10 @@ function windowResized() {
 	count.style('width', sw + 'px');
 	pitch.style('width', sw + 'px');
 	speed.style('width', sw + 'px');
+}
+
+function mousePressed() {
+	isMoving = !isMoving;
 }
 
 function setup() {
@@ -72,11 +77,13 @@ function draw() {
 	// Print the next-seed-angle in degrees with 2 decimal places
 	text(angle.toFixed(2), width - 6, height - 4);
 
-	// Slightly different angle for the next draw loop
-	angle += omega;
-	if (angle >= 360) {
-		angle -= 360;
-	} else if (angle < 0) {
-		angle += 360;
+	if (isMoving) {
+		// Slightly different angle for the next draw loop
+		angle += omega;
+		if (angle >= 360) {
+			angle -= 360;
+		} else if (angle < 0) {
+			angle += 360;
+		}
 	}
 }
