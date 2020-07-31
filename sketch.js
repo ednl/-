@@ -16,7 +16,7 @@ const DEFPITCH = 180;
 // Divide by 1000
 const MINSPEED = -100;
 const MAXSPEED =  100;
-const DEFSPEED =   3;
+const DEFSPEED =    3;
 
 const DEFANGLE = 135;
 
@@ -50,7 +50,7 @@ function makeLink() {
 		count.value(),
 		floor(pitch.value() * 100),
 		floor(speed.value() * 1000),
-		180
+		DEFANGLE
 	];
 
 	let href = '';
