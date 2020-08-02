@@ -68,7 +68,7 @@ class QueryString {
 	}
 
 	toString() {
-		return this.toText();
+		return this.toHtml();
 	}
 
 	goto() {

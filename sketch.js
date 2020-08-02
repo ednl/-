@@ -25,14 +25,14 @@ let divLink, divAngle;
 let isMoving = true;
 
 function makeLink() {
-	const q = new QueryString({
+	const qs = new QueryString({
 		s: size.value(),
 		c: count.value(),
 		p: floor(pitch.value() * 100),
 		w: floor(speed.value() * 1000),
 		a: DEFANGLE
 	});
-	divLink.html('<a href="' + q.toHtml() + '">share</a>');
+	divLink.html('<a href="' + qs + '">share</a>');
 }
 
 function getDimension() {
@@ -96,10 +96,10 @@ function setup() {
 	speed = createSlider(MINSPEED / 1000, MAXSPEED / 1000, intSpeed / 1000, 0.001);
 	angle = intAngle;
 
-	divAngle = createDiv();
-	divAngle.style('font-family', 'Calibri, Arial, sans-serif');
-	divAngle.style('font-size', '16px');
-	divAngle.position(6, 4);
+	size.changed(makeLink);
+	count.changed(makeLink);
+	pitch.changed(makeLink);
+	speed.changed(makeLink);
 
 	divLink = createDiv();
 	divLink.style('font-family', 'Calibri, Arial, sans-serif');
@@ -107,10 +107,10 @@ function setup() {
 	divLink.position(6, 24);
 	makeLink();
 
-	size.changed(makeLink);
-	count.changed(makeLink);
-	pitch.changed(makeLink);
-	speed.changed(makeLink);
+	divAngle = createDiv();
+	divAngle.style('font-family', 'Calibri, Arial, sans-serif');
+	divAngle.style('font-size', '16px');
+	divAngle.position(6, 4);
 
 	resizeUI(dim);
 	colorMode(HSB);
