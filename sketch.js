@@ -10,7 +10,7 @@ const DEFCOUNT =  500;
 
 // Divide by 100
 const MINPITCH =   1;
-const MAXPITCH = 200;
+const MAXPITCH = 360;
 const DEFPITCH = 180;
 
 // Divide by 1000
