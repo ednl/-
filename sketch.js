@@ -21,43 +21,18 @@ const DEFSPEED =    3;
 const DEFANGLE = 135;
 
 let size, count, pitch, speed, half, angle;  // UI
-let divLink;
+let divLink, divAngle;
 let isMoving = true;
 
-function query(key) {
-	let val = NaN, tmp = [];
-	var items = window.location.search.substr(1).split("&");
-	for (let i = 0; i < items.length; ++i) {
-		tmp = items[i].split("=");
-		if (tmp[0] === key) {
-			val = parseInt(decodeURIComponent(tmp[1]));
-		}
-	}
-	return val;
-}
-
-/*
-function getBool(name, def) {
-	const val = query(name);
-	return isNaN(val) ? def : (val ? true : false);
-}
-*/
-
 function makeLink() {
-	const keys = ['s', 'c', 'p', 'w', 'a'];
-	let vals = [
-		size.value(),
-		count.value(),
-		floor(pitch.value() * 100),
-		floor(speed.value() * 1000),
-		DEFANGLE
-	];
-
-	let href = '';
-	for (let i = 0; i < keys.length; ++i) {
-		href += (i == 0 ? '?' : '&amp;') + keys[i] + '=' + vals[i];
-	}
-	divLink.html('<a href="' + href + '">share</a>');
+	const q = new QueryString({
+		s: size.value(),
+		c: count.value(),
+		p: floor(pitch.value() * 100),
+		w: floor(speed.value() * 1000),
+		a: DEFANGLE
+	});
+	divLink.html('<a href="' + q.toHtml() + '">share</a>');
 }
 
 function getDimension() {
@@ -91,62 +66,51 @@ function mousePressed() {
 }
 
 function setup() {
-	let intSize = query('s');
-	if (isNaN(intSize)) {
-		intSize = DEFSIZE;
-	} else {
-		intSize = max(MINSIZE, min(MAXSIZE, intSize));
-	}
+	const q = new QueryString();
 
-	let intCount = query('c');
-	if (isNaN(intCount)) {
-		intCount = DEFCOUNT;
-	} else {
-		intCount = max(MINCOUNT, min(MAXCOUNT, intCount));
-	}
+	let intSize = q.getInt('s');
+	intSize = isNaN(intSize) ? DEFSIZE : max(MINSIZE, min(MAXSIZE, intSize));
 
-	let intPitch = query('p');
-	if (isNaN(intPitch)) {
-		intPitch = DEFPITCH;
-	} else {
-		intPitch = max(MINPITCH, min(MAXPITCH, intPitch));
-	}
+	let intCount = q.getInt('c');
+	intCount = isNaN(intCount) ? DEFCOUNT : max(MINCOUNT, min(MAXCOUNT, intCount));
 
-	let intSpeed = query('w');
-	if (isNaN(intSpeed)) {
-		intSpeed = DEFSPEED;
-	} else {
-		intSpeed = max(MINSPEED, min(MAXSPEED, intSpeed));
-	}
+	let intPitch = q.getInt('p');
+	intPitch = isNaN(intPitch) ? DEFPITCH : max(MINPITCH, min(MAXPITCH, intPitch));
 
-	let intAngle = query('a');
-	if (isNaN(intAngle)) {
-		intAngle = DEFANGLE;
-	} else {
-		intAngle %= 360;
-		if (intAngle < 0) {
-			intAngle += 360;
-		}
+	let intSpeed = q.getInt('w');
+	intSpeed = isNaN(intSpeed) ? DEFSPEED : max(MINSPEED, min(MAXSPEED, intSpeed));
+
+	let intAngle = q.getInt('a');
+	intAngle = isNaN(intAngle) ? DEFANGLE : intAngle % 360;
+	while (intAngle < 0) {
+		intAngle += 360;
 	}
 
 	const dim = getDimension();
 	createCanvas(dim, dim);
+
 	size  = createSlider(MINSIZE, MAXSIZE, intSize);
+	size.alt = 'Size';
 	count = createSlider(MINCOUNT, MAXCOUNT, intCount);
 	pitch = createSlider(MINPITCH / 100, MAXPITCH / 100, intPitch / 100, 0.01);
 	speed = createSlider(MINSPEED / 1000, MAXSPEED / 1000, intSpeed / 1000, 0.001);
 	angle = intAngle;
 
-	size.changed(makeLink);
-	count.changed(makeLink);
-	pitch.changed(makeLink);
-	speed.changed(makeLink);
+	divAngle = createDiv();
+	divAngle.style('font-family', 'Calibri, Arial, sans-serif');
+	divAngle.style('font-size', '16px');
+	divAngle.position(6, 4);
 
 	divLink = createDiv();
 	divLink.style('font-family', 'Calibri, Arial, sans-serif');
 	divLink.style('font-size', '16px');
-	divLink.position(6, 4);
+	divLink.position(6, 24);
 	makeLink();
+
+	size.changed(makeLink);
+	count.changed(makeLink);
+	pitch.changed(makeLink);
+	speed.changed(makeLink);
 
 	resizeUI(dim);
 	colorMode(HSB);
@@ -165,6 +129,9 @@ function draw() {
 	const omega = speed.value();
 	const da = angle * TORAD;
 	let a = 0, r = 0;          // angle & radius per seed
+
+	// Print the next-seed-angle in degrees with 2 decimal places
+	divAngle.html(angle.toFixed(2) + '&deg;');
 
 	push();
 	translate(half, half);     // origin in the middle
@@ -187,9 +154,6 @@ function draw() {
 		r += dr;
 	}
 	pop();
-
-	// Print the next-seed-angle in degrees with 2 decimal places
-	text(angle.toFixed(2), width - 6, height - 4);
 
 	if (isMoving) {
 		// Slightly different angle for the next draw loop
