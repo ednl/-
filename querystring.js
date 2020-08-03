@@ -6,7 +6,10 @@
  *   make a whole new query string;
  *   output the complete query string as plain text;
  *   output the complete query string encoded for use in an HTML link;
- *   navigate to the current page with a specific query string.
+ *   navigate to a page with a new query string.
+ * Examples:
+ *   const q1 = QueryString();  // parse the current document's query string
+ *   const q2 = QueryString({a:1,b:2});  // define a new query string object
  * @class
  */
 class QueryString {
@@ -87,7 +90,7 @@ class QueryString {
 						}
 					}
 
-					// Store in .values member object.
+					// Store the parameter in the .values member.
 					this.values[key] = val;
 				}
 			}
@@ -95,69 +98,81 @@ class QueryString {
 	}
 
 	/**
-	 * TODO Description.
+	 * Serializes and returns the current object collection of query
+	 * parameters. By default, returns a query string as plain text.
+	 * If the first argument to the method is '&amp;' or ';', returns
+	 * it with special characters encoded for use in HTML.
 	 * @method
 	 * @param {string} [arg0='&'] - Separator between query parameters.
 	 * @param {string} [arg1='='] - Separator between keys and values.
 	 * @param {string} [arg2='?'] - Prefix of the query string.
+	 * @returns {string} Current search query as a string, can be empty.
 	 */
 	serialize(...args) {
 		const sep = args.length ? args.shift() : '&';
 		const eq = args.length ? args.shift() : '=';
 		const qm = args.length ? args.shift() : '?';
-		const a = [];
+		const a = [];  // array to collect all key=val combinations
+
 		if (sep === '&amp;' || sep === ';') {
+			// HTML encoding requested.
 			Object.entries(this.values).forEach(([k, v]) => {
 				a.push(encodeURIComponent(k) + eq + encodeURIComponent(v));
 			});
 		} else {
+			// Plain text requested.
 			Object.entries(this.values).forEach(([k, v]) => {
 				a.push('' + k + eq + v);
 			});
 		}
-		if (a.length) {
-			return qm + a.join(sep);
-		}
-		return '';
+
+		return a.length ? qm + a.join(sep) : '';
 	}
 
 	/**
-	 * TODO Description.
+	 * Makes a plain text query string from the current query parameters.
 	 * @method
-	 * @returns {string} Complete query string as plain text.
+	 * @returns {string} Query string as plain text.
 	 */
 	toText() {
 		return this.serialize('&');
 	}
 
 	/**
-	 * TODO Description.
+	 * Makes an HTML encoded query string from the current query parameters.
+	 * Can be directly written to the href property of a link tag <a ...></a>
+	 * in HTML source code.
 	 * @method
-	 * @returns {string} Complete query string as HTML encoded text.
+	 * @returns {string} Query string as HTML encoded text.
 	 */
 	toHtml() {
 		return this.serialize('&amp;');
 	}
 
 	/**
-	 * TODO Description.
+	 * Default toString() method that is automatically called when a class
+	 * instance is used in a string context. Serializes the current query
+	 * parameters as HTML encoded text.
 	 * @method
-	 * @returns {string} Complete query string as HTML encoded text.
+	 * @returns {string} Query string as HTML encoded text.
 	 */
 	toString() {
 		return this.toHtml();
 	}
 
 	/**
-	 * TODO Description.
+	 * Navigate to a new URL with the query string of this class instance. If
+	 * no argument is supplied, go to the current document + the query string.
 	 * @method
+	 * @param {string} [newpage=''] - Optional new page address.
 	 */
-	goto() {
-		location = this.toText();
+	goto(newpage) {
+		const page = arguments.length ? newpage : '';
+		location = page + this.toText();
 	}
 
 	/**
-	 * TODO Description.
+	 * Get the integer value of the named query parameter.
 	 * @method
 	 * @param {string} key - Name of the query parameter.
 	 * @returns {number} Integer value of the query parameter, or undefined.
@@ -167,7 +182,7 @@ class QueryString {
 	}
 
 	/**
-	 * TODO Description.
+	 * Get the float value of the named query parameter.
 	 * @method
 	 * @param {string} key - Name of the query parameter.
 	 * @returns {number} Float value of the query parameter, or undefined.
@@ -177,7 +192,7 @@ class QueryString {
 	}
 
 	/**
-	 * TODO Description.
+	 * Get the boolean value of the named query parameter.
 	 * @method
 	 * @param {string} key - Name of the query parameter.
 	 * @returns {boolean} Boolean value of the query parameter, or undefined.
@@ -187,7 +202,7 @@ class QueryString {
 	}
 
 	/**
-	 * TODO Description.
+	 * Get the string value of the named query parameter.
 	 * @method
 	 * @param {string} key - Name of the query parameter.
 	 * @returns {string} String value of the query parameter, or undefined.
@@ -197,7 +212,7 @@ class QueryString {
 	}
 
 	/**
-	 * TODO Description.
+	 * Get the stored value of the named query parameter.
 	 * @method
 	 * @param {string} key - Name of the query parameter.
 	 * @returns Value of the query parameter, any type, could be undefined.
@@ -207,7 +222,7 @@ class QueryString {
 	}
 
 	/**
-	 * TODO Description.
+	 * Set the value of the named query parameter.
 	 * @method
 	 * @param {string} key - Name of the query parameter.
 	 * @param val - Value of the query parameter, any assignable type.
@@ -217,11 +232,14 @@ class QueryString {
 	}
 
 	/**
-	 * TODO Description.
+	 * Unset the named query parameter, return the old value.
 	 * @method
 	 * @param {string} key - Name of the query parameter.
+	 * @returns Deleted value of the query parameter, any type, could be undefined.
 	 */
 	unset(key) {
+		const tmp = this.values[key];
 		delete this.values[key];
+		return tmp;
 	}
 }
